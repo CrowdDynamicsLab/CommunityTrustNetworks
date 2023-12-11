@@ -5,7 +5,14 @@ import random
 def agent_selection(G, rho):
     ''' choose rho many agents to give recs to '''
 
-    return random.choices(list(G.nodes()), k = rho)
+    selected_agents = []
+    for node in G.nodes():
+        if G.nodes[node]['new']:
+            selected_agents.append(node)
+
+    selected_agents.extend(random.sample([x for x in list(G.nodes()) if x not in selected_agents], k = rho - len(selected_agents)))
+
+    return selected_agents
 
 def recommend(G, agents):
     ''' return the recs for the chosen agents as a dict '''
