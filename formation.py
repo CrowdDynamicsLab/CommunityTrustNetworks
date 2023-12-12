@@ -15,7 +15,7 @@ def new(N, alpha, Tau_a, Tau_b):
         tau = np.random.beta(Tau_a, Tau_b)
         type = choices(['orange','blue'], [alpha, 1-alpha])
 
-        G.add_node(node+1, trust = tau, type = type[0], new = False)
+        G.add_node(node+1, trust = tau, type = type[0], new = False, ref = False)
 
     return G
 
@@ -25,7 +25,7 @@ def node_enters(G, alpha, Tau_a, Tau_b):
     tau = np.random.beta(Tau_a, Tau_b)
     type = choices(['orange','blue'], [alpha, 1-alpha])
     new_node_num = len(G.nodes())+1
-    G.add_node(new_node_num, trust = tau, type = type[0], new = True)
+    G.add_node(new_node_num, trust = tau, type = type[0], new = True, ref = True)
 
 def christakis(G, recs):
     ''' run the christakis network formation model '''
@@ -37,7 +37,7 @@ def christakis(G, recs):
         trust = G.nodes[node]['trust']
         trust_flag = choices([1,0], [trust, 1-trust])[0]
 
-        # TODO: what happens if the edge already exists for the choice 
+        # TODO: what happens if the edge already exists for the choice
 
         # if the node chooses to trust the public entity, just add that edge
         if trust_flag:
@@ -51,7 +51,6 @@ def christakis(G, recs):
             # if this pairing works for both, then add edge
             if edge_util(G, node, node_pair) > 0 and edge_util(G, node_pair, node) > 0:
                 G.add_edge(node, node_pair)
-                print('added')
 
     return G
 
@@ -64,10 +63,8 @@ def get_pairing(G, node):
         choice_set = [x for x in list(G.nodes()) if nx.has_path(G, x, node) and nx.shortest_path_length(G, x, node) == 2]
         if len(choice_set) == 0:
             node_pair = choice([x for x in list(G.nodes()) if x != node])
-            print('had to go random')
         else:
             node_pair = choice(choice_set)
-            print('got degree 2')
 
     return node_pair
 
@@ -94,7 +91,6 @@ def edge_util(G, u, v):
         uv_3 = 0
 
     util = b1 + b2*x_v - (omega*(x_u-x_v)**2) + a1*deg_v + (a2*(deg_v)**2) + a3*uv_2 + a4*uv_3 + eps
-    print('util', util)
     return util
 
 def reset_nodes(G):
