@@ -71,7 +71,7 @@ def get_pairing(G, node):
 def edge_util(G, u, v):
     ''' returns utility to u from forming an edge with v '''
 
-    b1 = -2
+    b1 = -1
     b2 = 0
     omega = .25
     a1 = -.25

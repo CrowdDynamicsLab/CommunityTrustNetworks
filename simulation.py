@@ -5,7 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import formation, recommendations, metrics, plotting
 
-ntwk_iters = 5                       # network iters, how many nodes to add
+ntwk_iters = 10                 # network iters, how many nodes to add
+extra_iters = 10
 N = 20                          # number of nodes init
 alpha = .5                      # node types
 Tau_a = 20                      # trust dist, a param for beta dist
@@ -13,11 +14,11 @@ Tau_b = 2                       # trust dist, b param for beta dist
 rho = 5                         # resource constraint of public entity
 
 # run many iterations of the network formation model
-for i in range(ntwk_iters):
+for i in range(ntwk_iters+extra_iters):
     # if it's the first
     if i == 0:
         G = formation.new(N, alpha, Tau_a, Tau_b)
-    else:
+    elif i<ntwk_iters:
         formation.node_enters(G, alpha, Tau_a, Tau_b)
 
     # public entity chooses rho-many agents
@@ -31,3 +32,5 @@ for i in range(ntwk_iters):
 
     # resets all nodes to not be new
     formation.reset_nodes(G)
+
+plotting.vis_G(G)
