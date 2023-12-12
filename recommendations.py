@@ -6,10 +6,12 @@ def agent_selection(G, rho):
     ''' choose rho many agents to give recs to '''
 
     selected_agents = []
+    # prioritize new nodes
     for node in G.nodes():
         if G.nodes[node]['new']:
             selected_agents.append(node)
 
+    # prioritize new nodes
     selected_agents.extend(random.sample([x for x in list(G.nodes()) if x not in selected_agents], k = rho - len(selected_agents)))
 
     return selected_agents

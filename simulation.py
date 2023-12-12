@@ -5,15 +5,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import formation, recommendations, metrics, plotting
 
-iters = 5                       # network iters, how many nodes to add
+ntwk_iters = 5                       # network iters, how many nodes to add
 N = 10                          # number of nodes init
 alpha = .5                      # node types
 Tau_a = 20                      # trust dist, a param for beta dist
 Tau_b = 2                       # trust dist, b param for beta dist
 rho = 5                         # resource constraint of public entity
 
-# run many iteraitons of the network formation model
-for i in range(iters):
+# run many iterations of the network formation model
+for i in range(ntwk_iters):
     # if it's the first
     if i == 0:
         G = formation.new(N, alpha, Tau_a, Tau_b)
@@ -29,5 +29,5 @@ for i in range(iters):
     # one iteration of the network formation model with no new
     formation.christakis(G, recs)
 
-    # resets all nodes to not be new 
+    # resets all nodes to not be new
     formation.reset_nodes(G)

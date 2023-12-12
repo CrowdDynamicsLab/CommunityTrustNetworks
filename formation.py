@@ -37,6 +37,8 @@ def christakis(G, recs):
         trust = G.nodes[node]['trust']
         trust_flag = choices([1,0], [trust, 1-trust])[0]
 
+        # TODO: what happens if the edge already exists for the choice 
+
         # if the node chooses to trust the public entity, just add that edge
         if trust_flag:
             if recs[node] is not None:
@@ -49,6 +51,7 @@ def christakis(G, recs):
             # if this pairing works for both, then add edge
             if edge_util(G, node, node_pair) > 0 and edge_util(G, node_pair, node) > 0:
                 G.add_edge(node, node_pair)
+                print('added')
 
     return G
 
@@ -57,16 +60,42 @@ def get_pairing(G, node):
     if G.nodes[node]['new']:
         node_pair = choice([x for x in list(G.nodes()) if x != node])
 
-    # TODO: this should not be random
     else:
-        node_pair = choice([x for x in list(G.nodes()) if x != node])
+        choice_set = [x for x in list(G.nodes()) if nx.has_path(G, x, node) and nx.shortest_path_length(G, x, node) == 2]
+        if len(choice_set) == 0:
+            node_pair = choice([x for x in list(G.nodes()) if x != node])
+            print('had to go random')
+        else:
+            node_pair = choice(choice_set)
+            print('got degree 2')
 
     return node_pair
 
 def edge_util(G, u, v):
     ''' returns utility to u from forming an edge with v '''
 
-    return 0
+    b1 = -2
+    b2 = 0
+    omega = .25
+    a1 = -.25
+    a2 = 0
+    a3 = 2.75
+    a4 = 1.25
+    eps = np.random.logistic()
+
+    x_u = 1 if G.nodes[u]['type'] == 'orange' else 0
+    x_v = 1 if G.nodes[v]['type'] == 'orange' else 0
+    deg_v = G.degree(v)
+    if nx.has_path(G, u, v):
+        uv_2 = 1 if nx.shortest_path_length(G, u, v) == 2 else 0
+        uv_3 = 1 if nx.shortest_path_length(G, u, v) == 3 else 0
+    else:
+        uv_2 = 0
+        uv_3 = 0
+
+    util = b1 + b2*x_v - (omega*(x_u-x_v)**2) + a1*deg_v + (a2*(deg_v)**2) + a3*uv_2 + a4*uv_3 + eps
+    print('util', util)
+    return util
 
 def reset_nodes(G):
     ''' resets all nodes to not be new '''
