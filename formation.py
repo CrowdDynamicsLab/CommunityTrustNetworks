@@ -54,7 +54,6 @@ def christakis(G, recs, it):
             # if the edge already exists, we might delete it
             # this only happens in the case we pick a random node
             if G.has_edge(node, node_pair):
-                print("were neighbors")
                 if edge_util(G, node, node_pair) <= 0 or edge_util(G, node_pair, node) <= 0:
                     G.remove_edge(node, node_pair)
 
