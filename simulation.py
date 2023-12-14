@@ -12,16 +12,16 @@ extra_iters = 100               # extra iterations after all nodes have been add
 sim_iters = 2                   # total number of times to run each iter
 alpha = .5                      # node types
 
-results_dict = {}
+rho_list = [5,10]
+Tau_list = [(20,2), (15,2)]
+
+results_arr = np.empty((len(rho_list), len(Tau_list), sim_iters))
 
 # rho is public entity resource constraint
-for rho in [5, 10]:
+for idx_r, rho in enumerate(rho_list):
     #, 15, 20]:
-
     # tau_a and tau_b give the dist for trust
-    for Tau_a, Tau_b in [(20,2), (15,2)]:
-        #, (10,2), (5,2)]:
-        apl_list = []
+    for idx_t, (Tau_a, Tau_b) in enumerate(Tau_list):
         for sim_it in range(sim_iters):
             # run many iterations of the network formation model
             for i in range(ntwk_iters+extra_iters):
@@ -40,11 +40,12 @@ for rho in [5, 10]:
                 # one iteration of the network formation model with no new
                 formation.christakis(G, recs, i)
 
-            apl_list.append(1/metrics.apl(G))
+            apl = metrics.apl(G)
 
-        # TODO: make this less stupid
-        results_dict[(rho, Tau_a, Tau_b)] = apl_list
+            results_arr[idx_r][idx_t][sim_it] = apl
 
-print(results_dict)
+print(results_arr)
+
+plotting.heat_map(results_arr, rho_list, Tau_list, 'apl')
 
 #plotting.vis_G(G)

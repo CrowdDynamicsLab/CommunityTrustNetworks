@@ -77,3 +77,6 @@ def vis_G(G):
             color.append('rgb(66, 153, 245)')
 
     graph_vis(G, color)
+
+def heat_map(arr, dim1, dim2, type):
+    return None
