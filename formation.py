@@ -46,15 +46,22 @@ def christakis(G, recs, it):
             if recs[node] is not None:
                 G.add_edge(node, recs[node])
 
-        # TODO: what happens if the edge already exists for the choice
         # if not, then do christakis network formation model
         else:
             # do pairing
             node_pair = get_pairing(G, node, it)
 
-            # if this pairing works for both, then add edge
-            if edge_util(G, node, node_pair) > 0 and edge_util(G, node_pair, node) > 0:
-                G.add_edge(node, node_pair)
+            # if the edge already exists, we might delete it
+            # this only happens in the case we pick a random node
+            if G.has_edge(node, node_pair):
+                print("were neighbors")
+                if edge_util(G, node, node_pair) <= 0 or edge_util(G, node_pair, node) <= 0:
+                    G.remove_edge(node, node_pair)
+
+            # if it didn't exist, we'll see if it should
+            else:
+                if edge_util(G, node, node_pair) > 0 and edge_util(G, node_pair, node) > 0:
+                    G.add_edge(node, node_pair)
 
     return G
 
