@@ -15,19 +15,20 @@ def new(N, alpha, Tau_a, Tau_b):
         tau = np.random.beta(Tau_a, Tau_b)
         type = choices(['orange','blue'], [alpha, 1-alpha])
 
-        G.add_node(node+1, trust = tau, type = type[0], new = False, ref = False)
+        # add what iteration they arrived as well
+        G.add_node(node+1, trust = tau, type = type[0], arrived = 0)
 
     return G
 
-def node_enters(G, alpha, Tau_a, Tau_b):
+def node_enters(G, alpha, Tau_a, Tau_b, it):
     ''' add a new node and mark it as new '''
 
     tau = np.random.beta(Tau_a, Tau_b)
     type = choices(['orange','blue'], [alpha, 1-alpha])
-    new_node_num = len(G.nodes())+1
-    G.add_node(new_node_num, trust = tau, type = type[0], new = True, ref = True)
 
-def christakis(G, recs):
+    G.add_node(len(G.nodes())+1, trust = tau, type = type[0], arrived = it)
+
+def christakis(G, recs, it):
     ''' run the christakis network formation model '''
 
     # each node gets a pairing
@@ -37,16 +38,16 @@ def christakis(G, recs):
         trust = G.nodes[node]['trust']
         trust_flag = choices([1,0], [trust, 1-trust])[0]
 
-        # TODO: what happens if the edge already exists for the choice
-
         # if the node chooses to trust the public entity, just add that edge
         if trust_flag:
             if recs[node] is not None:
                 G.add_edge(node, recs[node])
+
+        # TODO: what happens if the edge already exists for the choice
         # if not, then do christakis network formation model
         else:
             # do pairing
-            node_pair = get_pairing(G, node)
+            node_pair = get_pairing(G, node, it)
 
             # if this pairing works for both, then add edge
             if edge_util(G, node, node_pair) > 0 and edge_util(G, node_pair, node) > 0:
@@ -54,9 +55,9 @@ def christakis(G, recs):
 
     return G
 
-def get_pairing(G, node):
+def get_pairing(G, node, it):
     ''' gets random (or not so random) pairing for christakis model '''
-    if G.nodes[node]['new']:
+    if G.nodes[node]['arrived'] == it:
         node_pair = choice([x for x in list(G.nodes()) if x != node])
 
     else:
@@ -92,9 +93,3 @@ def edge_util(G, u, v):
 
     util = b1 + b2*x_v - (omega*(x_u-x_v)**2) + a1*deg_v + (a2*(deg_v)**2) + a3*uv_2 + a4*uv_3 + eps
     return util
-
-def reset_nodes(G):
-    ''' resets all nodes to not be new '''
-
-    for node in G.nodes():
-        G.nodes[node]['new'] = False

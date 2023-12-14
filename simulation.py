@@ -18,19 +18,16 @@ for i in range(ntwk_iters+extra_iters):
     # if it's the first
     if i == 0:
         G = formation.new(N, alpha, Tau_a, Tau_b)
-    elif i<ntwk_iters:
-        formation.node_enters(G, alpha, Tau_a, Tau_b)
+    elif i <= ntwk_iters:
+        formation.node_enters(G, alpha, Tau_a, Tau_b, i)
 
     # public entity chooses rho-many agents
-    chosen_agents = recommendations.agent_selection(G, rho)
+    chosen_agents = recommendations.agent_selection(G, rho, i)
 
     # public entity makes recommendations to the agents chosen
     recs = recommendations.recommend(G, chosen_agents, fairness_func = metrics.apl)
 
     # one iteration of the network formation model with no new
-    formation.christakis(G, recs)
-
-    # resets all nodes to not be new
-    formation.reset_nodes(G)
+    formation.christakis(G, recs, i)
 
 plotting.vis_G(G)
