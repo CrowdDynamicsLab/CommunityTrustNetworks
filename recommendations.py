@@ -6,18 +6,21 @@ import metrics
 def agent_selection(G, rho, it):
     ''' choose rho many agents to give recs to '''
 
-    selected_agents = []
-    # prioritize new nodes
-    for node in G.nodes():
-        # only if it's not the first iter, prioritize new agents
-        if it != 0:
-            if G.nodes[node]['arrived'] == it:
-                selected_agents.append(node)
+    ranked_agents = []
 
-    # prioritize new nodes
-    selected_agents.extend(random.sample([x for x in list(G.nodes()) if x not in selected_agents], k = rho - len(selected_agents)))
+    # rank the new and old agents separately
+    new_agents = [x for x in list(G.nodes()) if G.nodes[x]['arrived'] != 0]
+    new_agents = sorted(new_agents, key=lambda n: G.nodes[n]['arrived'], reverse = True)
 
-    return selected_agents
+    old_agents = [y for y in list(G.nodes()) if G.nodes[y]['arrived'] == 0]
+
+    ranked_agents = new_agents
+
+    # scramble the old agents and extend the ranking list
+    random.shuffle(old_agents)
+    ranked_agents.extend(old_agents)
+
+    return ranked_agents[:rho]
 
 def recommend(G, nodes, fairness_func):
     ''' return the recs for the chosen agents as a dict '''

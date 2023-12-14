@@ -5,6 +5,9 @@ import numpy as np
 from random import choice, choices, shuffle
 from itertools import combinations
 
+# TODO: utility as a node attr?
+# we don't know people's utility, should use some other measure
+
 
 def new(N, alpha, Tau_a, Tau_b):
     ''' new graph with N many nodes '''
