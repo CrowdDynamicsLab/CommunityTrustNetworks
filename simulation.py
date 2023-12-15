@@ -9,17 +9,16 @@ N = 20                          # number of nodes init
 ntwk_iters = 10                 # network iters, how many nodes to add
 total_nodes = N+ntwk_iters
 extra_iters = 100               # extra iterations after all nodes have been added
-sim_iters = 2                   # total number of times to run each iter
+sim_iters = 5                   # total number of times to run each iter
 alpha = .5                      # node types
 
-rho_list = [5,10]
-Tau_list = [(20,2), (15,2)]
+rho_list = [5,10,15,20]
+Tau_list = [(5,2), (10,2), (15,2), (20,2)]
 
 results_arr = np.empty((len(rho_list), len(Tau_list), sim_iters))
 
 # rho is public entity resource constraint
 for idx_r, rho in enumerate(rho_list):
-    #, 15, 20]:
     # tau_a and tau_b give the dist for trust
     for idx_t, (Tau_a, Tau_b) in enumerate(Tau_list):
         for sim_it in range(sim_iters):
@@ -46,6 +45,6 @@ for idx_r, rho in enumerate(rho_list):
 
 print(results_arr)
 
-plotting.heat_map(results_arr, rho_list, Tau_list, 'apl')
+plotting.heat_map(results_arr, rho_list, Tau_list, type = 'apl', title = 'rho_vs_tau_test', save = True)
 
 #plotting.vis_G(G)

@@ -4,6 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import numpy as np
+import seaborn as sns
 
 def make_edge(x, y):
     return  go.Scatter(x         = x,
@@ -78,5 +79,30 @@ def vis_G(G):
 
     graph_vis(G, color)
 
-def heat_map(arr, dim1, dim2, type):
-    return None
+def heat_map(arr, dim1, dim2, type, title, save):
+
+    avg_arr = np.mean(arr, axis = 2)
+
+    data = np.rot90(avg_arr)
+
+    x_tick_labels = dim1
+    y_tick_labels = dim2[::-1]
+    ax = None
+
+    if type == 'apl' :
+        ax = sns.heatmap(data, vmin = 0, vmax = 1,
+                 annot=True, cbar=True, square=True,
+                 xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
+
+    ax.set_xlabel('Public Entity Resource Constraint')
+    ax.set_ylabel('Trust Beta Dist Params')
+    ax.tick_params(axis='both', which='major', labelsize=10)
+
+    cbar_axes = ax.figure.axes[-1]
+
+    if save:
+        title_save = 'figs/' + title +'.pdf'
+        plt.savefig(title_save, dpi = 300, bbox_inches = 'tight')
+        plt.close('all')
+    else:
+        plt.show()
