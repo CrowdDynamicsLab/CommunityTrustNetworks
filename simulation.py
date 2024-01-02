@@ -13,7 +13,7 @@ sim_iters = 5                   # total number of times to run each iter
 alpha = .5                      # node types
 
 rho_list = [5,10,15,20]
-Tau_list = [(5,2), (10,2), (15,2), (20,2)]
+Tau_list = [(2,20),(2,10),(2,2),(10,2), (20,2)]
 
 results_arr = np.empty((len(rho_list), len(Tau_list), sim_iters))
 
@@ -22,6 +22,7 @@ for idx_r, rho in enumerate(rho_list):
     # tau_a and tau_b give the dist for trust
     for idx_t, (Tau_a, Tau_b) in enumerate(Tau_list):
         for sim_it in range(sim_iters):
+            print(sim_it)
             # run many iterations of the network formation model
             for i in range(ntwk_iters+extra_iters):
                 # if it's the first
@@ -34,7 +35,7 @@ for idx_r, rho in enumerate(rho_list):
                 chosen_agents = recommendations.agent_selection(G, rho, i)
 
                 # public entity makes recommendations to the agents chosen
-                recs = recommendations.recommend(G, chosen_agents, fairness_func = metrics.apl)
+                recs = recommendations.recommend(G, chosen_agents, fairness_func = metrics.triangles)
 
                 # one iteration of the network formation model with no new
                 formation.christakis(G, recs, i)
@@ -45,6 +46,6 @@ for idx_r, rho in enumerate(rho_list):
 
 print(results_arr)
 
-plotting.heat_map(results_arr, rho_list, Tau_list, type = 'apl', title = 'rho_vs_tau_test', save = True)
+#plotting.heat_map(results_arr, rho_list, Tau_list, type = 'triangles', title = 'rho_vs_tau_test2', save = True)
 
 #plotting.vis_G(G)

@@ -32,15 +32,13 @@ def recommend(G, nodes, fairness_func):
     for node in nodes:
         choices = [x for x in list(G.nodes()) if x != node and x not in G.neighbors(node)]
         for choice in choices:
-            # only check an edge if it doesn't already exist
-            if not G.has_edge(choice, node):
-                G.add_edge(node, choice)
-                fairness = fairness_func(G)
-                G.remove_edge(node, choice)
+            G.add_edge(node, choice)
+            fairness = fairness_func(G)
+            G.remove_edge(node, choice)
 
-                if fairness > best_fairness:
-                    best_fairness = fairness
-                    best_choice = choice
+            if fairness > best_fairness:
+                best_fairness = fairness
+                best_choice = choice
 
         recs[node] = best_choice
     return recs
