@@ -85,7 +85,7 @@ def heat_map(arr, dim1, dim2, type, title, save):
 
     data = np.rot90(avg_arr)
 
-    x_tick_labels = dim1
+    x_tick_labels = np.round(dim1,2)
     y_tick_labels = dim2[::-1]
     ax = None
 
@@ -94,7 +94,12 @@ def heat_map(arr, dim1, dim2, type, title, save):
                  annot=True, cbar=True, square=True,
                  xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
 
-    ax.set_xlabel('Public Entity Resource Constraint')
+    if type == 'triangles':
+        ax = sns.heatmap(data, vmin = 0, vmax = .5,
+                 annot=True, cbar=True, square=True,
+                 xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
+
+    ax.set_xlabel('Public Entity Resource Constraint (prop of nodes)')
     ax.set_ylabel('Trust Beta Dist Params')
     ax.tick_params(axis='both', which='major', labelsize=10)
 

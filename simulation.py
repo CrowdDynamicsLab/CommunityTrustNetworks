@@ -5,15 +5,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import formation, recommendations, metrics, plotting
 
-N = 20                          # number of nodes init
+N = 50                          # number of nodes init
 ntwk_iters = 10                 # network iters, how many nodes to add
 total_nodes = N+ntwk_iters
 extra_iters = 100               # extra iterations after all nodes have been added
-sim_iters = 5                   # total number of times to run each iter
+sim_iters = 10                   # total number of times to run each iter
 alpha = .5                      # node types
 
-rho_list = [5,10,15,20]
-Tau_list = [(2,20),(2,10),(2,2),(10,2), (20,2)]
+rho_list = [0, 10, 20, 30, 40, 50]
+#rho_list = [0]
+#rho_list = [5,10,15]
+Tau_list = [(2,20),(2,5),(2,10),(2,2),(5,2),(10,2),(20,2)]
+#Tau_list = [(2,10),(2,2),(10,2)]
 
 results_arr = np.empty((len(rho_list), len(Tau_list), sim_iters))
 
@@ -22,7 +25,7 @@ for idx_r, rho in enumerate(rho_list):
     # tau_a and tau_b give the dist for trust
     for idx_t, (Tau_a, Tau_b) in enumerate(Tau_list):
         for sim_it in range(sim_iters):
-            print(sim_it)
+            print(rho, Tau_a, Tau_b, sim_it)
             # run many iterations of the network formation model
             for i in range(ntwk_iters+extra_iters):
                 # if it's the first
@@ -40,12 +43,15 @@ for idx_r, rho in enumerate(rho_list):
                 # one iteration of the network formation model with no new
                 formation.christakis(G, recs, i)
 
-            apl = metrics.apl(G)
+            tri = metrics.triangles(G)
 
-            results_arr[idx_r][idx_t][sim_it] = apl
+            results_arr[idx_r][idx_t][sim_it] = tri
+            print(tri)
 
-print(results_arr)
+#print(results_arr)
 
-#plotting.heat_map(results_arr, rho_list, Tau_list, type = 'triangles', title = 'rho_vs_tau_test2', save = True)
+new_rho_list = [x/G.number_of_nodes() for x in rho_list]
+
+plotting.heat_map(results_arr, new_rho_list, Tau_list, type = 'triangles', title = 'rho_vs_tau_triangles', save = True)
 
 #plotting.vis_G(G)
