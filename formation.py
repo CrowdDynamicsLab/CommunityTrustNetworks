@@ -34,14 +34,22 @@ def christakis(G, recs, it):
     # each node gets a pairing
     node_list = list(G.nodes())
     shuffle(node_list)
+    num_accepted_prop = 0
     for node in node_list:
         trust = G.nodes[node]['trust']
         trust_flag = choices([1,0], [trust, 1-trust])[0]
 
-        # if the node chooses to trust the public entity, just add that edge
+        # if the node chooses to trust the public entity, add that edge
+        # only if the recommended node trusts it too
         if trust_flag:
             if recs[node] is not None:
-                G.add_edge(node, recs[node])
+                rec_node = recs[node]
+                trust_rec = G.nodes[rec_node]['trust']
+                trust_flag_rec = choices([1,0], [trust_rec, 1-trust_rec])[0]
+
+                if trust_flag_rec:
+                    G.add_edge(node, rec_node)
+                    num_accepted_prop+=1
 
         # if not, then do christakis network formation model
         else:
@@ -59,7 +67,7 @@ def christakis(G, recs, it):
                 if edge_util(G, node, node_pair) > 0 and edge_util(G, node_pair, node) > 0:
                     G.add_edge(node, node_pair)
 
-    return G
+    return num_accepted_prop
 
 def get_pairing(G, node, it):
     ''' gets random (or not so random) pairing for christakis model '''

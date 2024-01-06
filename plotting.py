@@ -99,6 +99,11 @@ def heat_map(arr, dim1, dim2, type, title, save):
                  annot=True, cbar=True, square=True,
                  xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
 
+    if type == 'num_prop':
+        ax = sns.heatmap(data, vmin = 0,
+                 annot=True, cbar=True, square=True,
+                 xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
+
     ax.set_xlabel('Public Entity Resource Constraint (prop of nodes)')
     ax.set_ylabel('Trust Beta Dist Params')
     ax.tick_params(axis='both', which='major', labelsize=10)

@@ -2,6 +2,20 @@
 import networkx as nx
 import numpy as np
 
+''' average number of triangles each refugee is in'''
+def triangles(G):
+    new_nodes = [x for x in list(G.nodes()) if G.nodes[x]['arrived'] != 0]
+
+    triangles = nx.triangles(G, new_nodes)
+    tri_list = list(triangles.values())
+
+    avg_tri = 0 if len(tri_list) == 0 else np.mean(tri_list)
+    max_tri = (G.number_of_nodes()-1)*(G.number_of_nodes()-2)
+
+    norm_tri = avg_tri/max_tri
+
+    return norm_tri
+
 ''' simple connectivity '''
 def connectedness(G):
     return nx.edge_connectivity(G)
@@ -27,8 +41,6 @@ def old_triangles(G):
     triangles = [tri for tri in nx.enumerate_all_cliques(G) if len(tri) == 3]
 
     for triangle in triangles:
-
-        # TODO: probably a more pythonic way to do this
 
         a = triangle[0]
         b = triangle[1]
@@ -62,20 +74,6 @@ def old_triangles(G):
     max_tri_1 = num_old_nodes * len(new_nodes)
     max_tri_2 = num_old_nodes * (num_old_nodes - 1)
     max_tri = max_tri_1 + max_tri_2
-
-    norm_tri = avg_tri/max_tri
-
-    return norm_tri
-
-''' average number of triangles each refugee is in'''
-def triangles(G):
-    new_nodes = [x for x in list(G.nodes()) if G.nodes[x]['arrived'] != 0]
-
-    triangles = nx.triangles(G, new_nodes)
-    tri_list = list(triangles.values())
-
-    avg_tri = 0 if len(tri_list) == 0 else np.mean(tri_list)
-    max_tri = (G.number_of_nodes()-1)*(G.number_of_nodes()-2)
 
     norm_tri = avg_tri/max_tri
 
