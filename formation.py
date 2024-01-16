@@ -16,7 +16,7 @@ def new(N, alpha, Tau_a, Tau_b):
         type = choices(['orange','blue'], [alpha, 1-alpha])
 
         # add what iteration they arrived as well
-        G.add_node(node+1, trust = tau, type = type[0], arrived = 0)
+        G.add_node(node+1, trust = tau, type = type[0], arrived = 0, new_trust = 0)
 
     return G
 
@@ -26,9 +26,9 @@ def node_enters(G, alpha, Tau_a, Tau_b, it):
     tau = np.random.beta(Tau_a, Tau_b)
     type = choices(['orange','blue'], [alpha, 1-alpha])
 
-    G.add_node(len(G.nodes())+1, trust = tau, type = type[0], arrived = it)
+    G.add_node(len(G.nodes())+1, trust = tau, type = type[0], arrived = it, new_trust = 0)
 
-def christakis(G, recs, it, transparent_agent_trust = False, payment_prop = 0):
+def christakis(G, recs, it, transparent_agent_trust = False, payment_prop = 0, transparent_entity = False):
     ''' run the christakis network formation model '''
 
     # each node gets a pairing
@@ -36,11 +36,14 @@ def christakis(G, recs, it, transparent_agent_trust = False, payment_prop = 0):
     shuffle(node_list)
     num_accepted_prop = 0
     money_spent_entity = 0
-    
+
     for node in node_list:
         got_rec = False
         trust_flag_rec = False
-        trust = G.nodes[node]['trust']
+        if not transparent_entity:
+            trust = G.nodes[node]['trust']
+        else:
+            trust = G.nodes[node]['new_trust']
 
         # if entity can see agent trust, pay them payment_prop of difference between their trust and 1
         if transparent_agent_trust:
@@ -55,7 +58,10 @@ def christakis(G, recs, it, transparent_agent_trust = False, payment_prop = 0):
         if recs[node] is not None:
             got_rec = True
             rec_node = recs[node]
-            trust_rec = G.nodes[rec_node]['trust']
+            if not transparent_entity:
+                trust_rec = G.nodes[rec_node]['trust']
+            else:
+                trust_rec = G.nodes[rec_node]['new_trust']
 
             # if entity can see agent trust, pay them payment_prop of difference between their trust and 1
             if transparent_agent_trust:

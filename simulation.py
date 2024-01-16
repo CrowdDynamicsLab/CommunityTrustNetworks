@@ -4,20 +4,23 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 import formation, recommendations, metrics, plotting
+from copy import deepcopy
+from json import JSONEncoder
+import json
 
 N = 50                          # number of nodes init
 ntwk_iters = 10                 # network iters, how many nodes to add
 total_nodes = N+ntwk_iters
-extra_iters = 100               # extra iterations after all nodes have been added
+extra_iters = 10               # extra iterations after all nodes have been added
 sim_iters = 1                  # total number of times to run each iter
 alpha = .5                      # node types
 
-rho_list = [0, 10, 20, 30, 40, 50]
+#rho_list = [0, 10, 20, 30, 40, 50]
 #rho_list = [30, 40]
 #rho_list = [0]
-#rho_list = [5,10,15]
-Tau_list = [(2,20),(2,10),(2,5),(2,2),(5,2),(10,2),(20,2)]
-#Tau_list = [(2,10),(2,2),(10,2)]
+rho_list = [5,10]
+#Tau_list = [(2,20),(2,10),(2,5),(2,2),(5,2),(10,2),(20,2)]
+Tau_list = [(2,10),(2,2)]
 #Tau_list = [(5,2),(10,2),(20,2)]
 
 results_arr1 = np.empty((len(rho_list), len(Tau_list), sim_iters))
@@ -25,6 +28,7 @@ results_arr2 = np.empty((len(rho_list), len(Tau_list), sim_iters))
 #results_arr3 = np.empty((len(rho_list), len(Tau_list), sim_iters))
 #results_arr4 = np.empty((len(rho_list), len(Tau_list), sim_iters))
 
+G_old = None
 
 # rho is public entity resource constraint
 for idx_r, rho in enumerate(rho_list):
@@ -44,6 +48,15 @@ for idx_r, rho in enumerate(rho_list):
                 elif i <= ntwk_iters:
                     formation.node_enters(G, alpha, Tau_a, Tau_b, i)
 
+                if i != 0:
+                    # public entity announces what it did in the last iteration
+                    # this can change some agents' trust levels
+
+                    recommendations.entity_announcement(G_old, G, transparent_entity = False, announcement_method = 'local')
+
+                # store the current G before anything happens
+                G_old = deepcopy(G)
+
                 # public entity chooses rho-many agents
                 chosen_agents = recommendations.agent_selection(G, rho, i)
 
@@ -53,7 +66,7 @@ for idx_r, rho in enumerate(rho_list):
                 num_total_prop += len([x for x in recs.values() if x is not None])
 
                 # one iteration of the network formation model with no new agents
-                num_accept, amount_spent = formation.christakis(G, recs, i, transparent_agent_trust = True, payment_prop = 1)
+                num_accept, amount_spent = formation.christakis(G, recs, i, transparent_agent_trust = True, payment_prop = .5, transparent_entity = False)
                 num_accepted_prop += num_accept
                 total_money_spent += amount_spent
 
@@ -68,10 +81,24 @@ for idx_r, rho in enumerate(rho_list):
 
 #print(results_arr)
 
-new_rho_list = [x/G.number_of_nodes() for x in rho_list]
+#new_rho_list = [x/G.number_of_nodes() for x in rho_list]
 
-plotting.heat_map(results_arr1, new_rho_list, Tau_list, type = 'triangles', title = 'rho_vs_tau_triangles_spend1', save = True)
-plotting.heat_map(results_arr2, new_rho_list, Tau_list, type = 'num_prop', title = 'rho_vs_tau_amount_spent1', save = True)
+class NumpyArrayEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return JSONEncoder.default(self, obj)
+
+# Serialization
+filename = 'sim_output/rq2.json'
+numpyData = {"triangles": results_arr1, "amount_spent": results_arr2}
+with open(filename, "w") as write_file:
+    json.dump(numpyData, write_file, cls=NumpyArrayEncoder)
+print("Done writing serialized NumPy array into file")
+
+
+#plotting.heat_map(results_arr1, new_rho_list, Tau_list, type = 'triangles', title = 'rho_vs_tau_triangles_spent50', save = True)
+#plotting.heat_map(results_arr2, new_rho_list, Tau_list, type = 'num_prop', title = 'rho_vs_tau_amount_spent50', save = True)
 #plotting.heat_map(results_arr3, new_rho_list, Tau_list, type = 'num_prop', title = 'rho_vs_tau_num_none_recs', save = True)
 #plotting.heat_map(results_arr4, new_rho_list, Tau_list, type = 'triangles', title = 'rho_vs_tau_triangles', save = True)
 
