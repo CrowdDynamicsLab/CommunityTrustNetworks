@@ -3,21 +3,23 @@ import json
 import plotting
 import numpy as np
 
-N = 50
-ntwk_iters = 10
+N = 100
+ntwk_iters = 15
 
-rho_list = [5,10]
-Tau_list = [(2,10),(2,2)]
-new_rho_list = [x/N+ntwk_iters for x in rho_list]
+rho_list = [0, 5, 10, 15, 20]
+Tau_list = [(2,20),(2,10),(2,5),(2,2),(5,2),(10,2),(20,2)]
+new_rho_list = [x/(N+ntwk_iters) for x in rho_list]
 
-filename = 'sim_output/rq2.json'
+filename = 'sim_output/rq2_fifth_new1.json'
 
 # Deserialization
 with open(filename, "r") as read_file:
     decodedArray = json.load(read_file)
 
     arr1 = np.asarray(decodedArray["triangles"])
-    arr2 = np.asarray(decodedArray["amount_spent"])
+    arr2 = np.asarray(decodedArray["new_trust"])
+    arr3 = np.asarray(decodedArray["amount_spent"])
 
-plotting.heat_map(arr1, new_rho_list, Tau_list, type = 'triangles', title = 'test1', save = True)
-plotting.heat_map(arr2, new_rho_list, Tau_list, type = 'num_prop', title = 'test2', save = True)
+plotting.heat_map(arr1, new_rho_list, Tau_list, type = 'triangles', title = 'rq2_1fifth_new1_triangles', save = True)
+plotting.heat_map(arr2, new_rho_list, Tau_list, type = 'apl', title = 'rq2_1fifth_new1_trust', save = True)
+plotting.heat_map(arr3, new_rho_list, Tau_list, type = 'num_prop', title = 'rq2_1fifth_new1_spent', save = True)

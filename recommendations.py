@@ -3,9 +3,17 @@
 import random
 import metrics
 import networkx as nx
+import numpy as np
 
-def agent_selection(G, rho, it):
+def agent_selection(G, rho, it, ad_campaign = False, ad_tradeoff = 0):
     ''' choose rho many agents to give recs to '''
+
+    money_spent = 0
+
+    if ad_campaign:
+        ad_rho = int(np.floor(rho*ad_tradeoff))
+        rho = rho - ad_rho
+        money_spent = entity_ad_campaign(G, ad_rho)
 
     ranked_agents = []
 
@@ -24,7 +32,7 @@ def agent_selection(G, rho, it):
     # make sure everything is ranked
     assert len(ranked_agents) == G.number_of_nodes()
 
-    return ranked_agents[:rho]
+    return ranked_agents[:rho], money_spent
 
 def recommend(G, nodes, fairness_func):
     ''' return the recs for the chosen agents as a dict '''
@@ -69,8 +77,9 @@ def entity_announcement(G_old, G, transparent_entity = False, announcement_metho
             improvement = new_fairness-old_fairness
 
             for node in G.nodes():
-                G.nodes[node]['new_trust'] = G.nodes[node]['trust'] + (500*improvement)
+                G.nodes[node]['trust'] = min([G.nodes[node]['trust'] + .71*improvement,1])
 
+        # entity gives each node a specific announcement
         elif announcement_method == 'local':
 
             for node in G_old.nodes():
@@ -94,4 +103,25 @@ def entity_announcement(G_old, G, transparent_entity = False, announcement_metho
 
                 improvement = new_fairness-old_fairness
 
-                G.nodes[node]['new_trust'] = G.nodes[node]['trust'] + (improvement)
+                G.nodes[node]['trust'] = min([G.nodes[node]['trust'] + .48*improvement,1])
+
+def entity_ad_campaign(G, ad_rho):
+    ''' entity decides to advertise to a set of ad_rho-many agents to increase their trust'''
+
+    trust_restoration = .71
+    money_spent = 0
+
+    agents = [x for x in list(G.nodes())]
+    #old_agents = [y for y in list(G.nodes()) if G.nodes[y]['arrived'] == 0]
+
+    #new_agents.extend(old_agents)
+
+    agents = sorted(agents, key=lambda m: G.nodes[m]['trust'])
+
+    for node in agents[:ad_rho]:
+        money = (1 - G.nodes[node]['trust'])
+        G.nodes[node]['trust'] = min([G.nodes[node]['trust'] + trust_restoration*money,1])
+
+        money_spent += money
+
+    return money_spent

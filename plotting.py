@@ -95,7 +95,7 @@ def heat_map(arr, dim1, dim2, type, title, save):
                  xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
 
     if type == 'triangles':
-        ax = sns.heatmap(data, vmin = 0, vmax = .5,
+        ax = sns.heatmap(data, vmin = 0, vmax = .15,
                  annot=True, cbar=True, square=True,
                  xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
 

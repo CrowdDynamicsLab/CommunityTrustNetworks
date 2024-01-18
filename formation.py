@@ -28,28 +28,27 @@ def node_enters(G, alpha, Tau_a, Tau_b, it):
 
     G.add_node(len(G.nodes())+1, trust = tau, type = type[0], arrived = it, new_trust = 0)
 
-def christakis(G, recs, it, transparent_agent_trust = False, payment_prop = 0, transparent_entity = False):
+def christakis(G, recs, it):
     ''' run the christakis network formation model '''
 
     # each node gets a pairing
     node_list = list(G.nodes())
     shuffle(node_list)
     num_accepted_prop = 0
-    money_spent_entity = 0
 
     for node in node_list:
         got_rec = False
         trust_flag_rec = False
-        if not transparent_entity:
-            trust = G.nodes[node]['trust']
-        else:
-            trust = G.nodes[node]['new_trust']
+        #if not transparent_entity:
+        trust = G.nodes[node]['trust']
+        #else:
+            #trust = G.nodes[node]['new_trust']
 
         # if entity can see agent trust, pay them payment_prop of difference between their trust and 1
-        if transparent_agent_trust:
-            payment = payment_prop*(1 - trust)
-            trust += payment
-            money_spent_entity += payment
+        #if transparent_agent_trust:
+        #    payment = payment_prop*(1 - trust)
+        #    trust += payment
+        #    money_spent_entity += payment
 
         trust_flag = choices([1,0], [trust, 1-trust])[0]
 
@@ -58,16 +57,16 @@ def christakis(G, recs, it, transparent_agent_trust = False, payment_prop = 0, t
         if recs[node] is not None:
             got_rec = True
             rec_node = recs[node]
-            if not transparent_entity:
-                trust_rec = G.nodes[rec_node]['trust']
-            else:
-                trust_rec = G.nodes[rec_node]['new_trust']
+            #if not transparent_entity:
+            trust_rec = G.nodes[rec_node]['trust']
+            #else:
+                #trust_rec = G.nodes[rec_node]['new_trust']
 
             # if entity can see agent trust, pay them payment_prop of difference between their trust and 1
-            if transparent_agent_trust:
-                rec_payment = payment_prop*(1 - trust_rec)
-                trust_rec += rec_payment
-                money_spent_entity += rec_payment
+            #if transparent_agent_trust:
+            #    rec_payment = payment_prop*(1 - trust_rec)
+            #    trust_rec += rec_payment
+            #    money_spent_entity += rec_payment
 
             trust_flag_rec = choices([1,0], [trust_rec, 1-trust_rec])[0]
             if trust_flag:
@@ -91,7 +90,7 @@ def christakis(G, recs, it, transparent_agent_trust = False, payment_prop = 0, t
                 if edge_util(G, node, node_pair) > 0 and edge_util(G, node_pair, node) > 0:
                     G.add_edge(node, node_pair)
 
-    return num_accepted_prop, money_spent_entity
+    return num_accepted_prop
 
 def get_pairing(G, node, it):
     ''' gets random (or not so random) pairing for christakis model '''
