@@ -12,7 +12,7 @@ N = 100                          # number of nodes init
 ntwk_iters = 15                  # network iters, how many nodes to add
 total_nodes = N+ntwk_iters
 extra_iters = 50                # extra iterations after all nodes have been added
-sim_iters = 10                   # total number of times to run each iter
+sim_iters = 1                   # total number of times to run each iter
 alpha = .5                      # node types
 
 rho_list = [0, 5, 10, 15, 20]
@@ -58,7 +58,7 @@ for idx_r, rho in enumerate(rho_list):
                 G_old = deepcopy(G)
 
                 # public entity chooses rho-many agents
-                chosen_agents, amount_spent = recommendations.agent_selection(G, rho, i, ad_campaign = True, ad_tradeoff = 2/5)
+                chosen_agents, amount_spent = recommendations.agent_selection(G, rho, i, ad_campaign = False, ad_tradeoff = 5/5)
 
                 # public entity makes recommendations to the agents chosen
                 recs, num_recs_not_found = recommendations.recommend(G, chosen_agents, fairness_func = metrics.triangles)
@@ -92,13 +92,13 @@ class NumpyArrayEncoder(JSONEncoder):
         return JSONEncoder.default(self, obj)
 
 # Serialization
-filename = 'sim_output/rq2_2fifth_new10.json'
+#filename = 'sim_output/rq3_5fifth_new10.json'
 #numpyData = {"triangles": results_arr1, "new_trust": results_arr2}
-numpyData = {"triangles": results_arr1, "new_trust": results_arr2, "amount_spent": results_arr3}
+#numpyData = {"triangles": results_arr1, "new_trust": results_arr2, "amount_spent": results_arr3}
 #numpyData = {"triangles": results_arr1}
-with open(filename, "w") as write_file:
-    json.dump(numpyData, write_file, cls=NumpyArrayEncoder)
-print("Done writing serialized NumPy array into file")
+#with open(filename, "w") as write_file:
+#    json.dump(numpyData, write_file, cls=NumpyArrayEncoder)
+#print("Done writing serialized NumPy array into file")
 
 #plotting.heat_map(results_arr1, new_rho_list, Tau_list, type = 'triangles', title = 'rho_vs_tau_triangles_spent50', save = True)
 #plotting.heat_map(results_arr2, new_rho_list, Tau_list, type = 'num_prop', title = 'rho_vs_tau_amount_spent50', save = True)

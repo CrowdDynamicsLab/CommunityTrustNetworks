@@ -5,6 +5,11 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import numpy as np
 import seaborn as sns
+import pandas as pd
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
 
 def make_edge(x, y):
     return  go.Scatter(x         = x,
@@ -95,7 +100,7 @@ def heat_map(arr, dim1, dim2, type, title, save):
                  xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
 
     if type == 'triangles':
-        ax = sns.heatmap(data, vmin = 0, vmax = .15,
+        ax = sns.heatmap(data, vmin = 0, vmax = .075,
                  annot=True, cbar=True, square=True,
                  xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
 
@@ -104,12 +109,77 @@ def heat_map(arr, dim1, dim2, type, title, save):
                  annot=True, cbar=True, square=True,
                  xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
 
-    ax.set_xlabel('Public Entity Resource Constraint (prop of nodes)')
-    ax.set_ylabel('Trust Beta Dist Params')
+    if type == 'spent':
+        ax = sns.heatmap(data, vmin = 0, vmax = 150,
+                 annot=True, cbar=True, square=True,
+                 xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5, fmt='.2f')
+
+    ax.set_xlabel('Resource Constraint')
+    ax.set_ylabel('Agent Trust')
     ax.tick_params(axis='both', which='major', labelsize=10)
 
     cbar_axes = ax.figure.axes[-1]
 
+    if save:
+        title_save = 'figs/' + title +'.pdf'
+        plt.savefig(title_save, dpi = 300, bbox_inches = 'tight')
+        plt.close('all')
+    else:
+        plt.show()
+
+def surface_plot(arr, dim1, dim2, type, title, save):
+
+    avg_arr = np.mean(arr, axis = 2)
+
+    data = np.rot90(avg_arr)
+
+
+    n = len(dim1)
+    m = len(dim2)
+
+    tau = np.repeat(dim2, n)[::-1]
+
+    rho = (np.tile(dim1, m))[::-1]
+
+    data = np.fliplr(data)
+
+    df = pd.DataFrame({"rho":rho.reshape(n*m,), "tau":tau.reshape(n*m,), "tri":data.reshape(n*m,)}, index=range(0,n*m))
+
+    #print(df)
+
+    #print(df.head(27))
+
+    X, y = df[["rho", "tau"]], df["tri"]
+    poly = PolynomialFeatures(degree=2, include_bias=False)
+    poly_features = poly.fit_transform(X)
+    poly_reg_model = LinearRegression()
+    poly_reg_model.fit(poly_features, y)
+
+    i = poly_reg_model.intercept_
+    c = poly_reg_model.coef_
+
+    print(i,c)
+
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+
+
+    tau = np.arange(0, 1.00, 1/100)
+    rho = np.arange(0, 2, 1/100)
+
+    R,T = np.meshgrid(rho, tau)
+    tri = i + c[0]*R + c[1]*T + c[2]*(R**2) + c[3]*(T**2) + c[4]*T*R
+
+    surf = ax.plot_surface(R, T, tri, cmap = sns.cm.rocket ,vmin =0, vmax = .1,
+                           linewidth=0, antialiased=False)
+
+    fig.colorbar(surf, shrink = .4)
+
+    ax.view_init(25, 220)
+    #ax.view_init(270, 0)
+
+    ax.set_xlabel('Resource Constraint')
+    ax.set_ylabel('Agent Trust')
+    ax.tick_params(axis='both', which='major', labelsize=10)
     if save:
         title_save = 'figs/' + title +'.pdf'
         plt.savefig(title_save, dpi = 300, bbox_inches = 'tight')
