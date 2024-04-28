@@ -10,7 +10,7 @@ def triangles(G):
     tri_list = list(triangles.values())
 
     avg_tri = 0 if len(tri_list) == 0 else np.mean(tri_list)
-    max_tri = (G.number_of_nodes()-1)*(G.number_of_nodes()-2)
+    max_tri = ((G.number_of_nodes()-1)*(G.number_of_nodes()-2))/2
 
     norm_tri = avg_tri/max_tri
 

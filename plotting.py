@@ -10,6 +10,8 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
+from matplotlib.ticker import (MultipleLocator, AutoMinorLocator, FixedLocator)
+from matplotlib.lines import Line2D
 
 def make_edge(x, y):
     return  go.Scatter(x         = x,
@@ -100,7 +102,7 @@ def heat_map(arr, dim1, dim2, type, title, save):
                  xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
 
     if type == 'triangles':
-        ax = sns.heatmap(data, vmin = 0, vmax = .075,
+        ax = sns.heatmap(data, vmin = 0, vmax = .15,
                  annot=True, cbar=True, square=True,
                  xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
 
@@ -154,11 +156,13 @@ def surface_plot(arr, dim1, dim2, type, title, save):
     poly_features = poly.fit_transform(X)
     poly_reg_model = LinearRegression()
     poly_reg_model.fit(poly_features, y)
+    print(poly_reg_model.score(poly_features, y))
 
     i = poly_reg_model.intercept_
     c = poly_reg_model.coef_
 
     print(i,c)
+
 
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
@@ -169,17 +173,102 @@ def surface_plot(arr, dim1, dim2, type, title, save):
     R,T = np.meshgrid(rho, tau)
     tri = i + c[0]*R + c[1]*T + c[2]*(R**2) + c[3]*(T**2) + c[4]*T*R
 
-    surf = ax.plot_surface(R, T, tri, cmap = sns.cm.rocket ,vmin =0, vmax = .1,
+    # 0.012657288401117527 [-0.01259024 -0.06186663 -0.0001596   0.06530567  0.0585887 ]
+
+
+    surf = ax.plot_surface(R, T, tri, cmap = sns.cm.rocket ,vmin =0, vmax = .2,
                            linewidth=0, antialiased=False)
 
     fig.colorbar(surf, shrink = .4)
 
-    ax.view_init(25, 220)
+    ax.view_init(10, 230)
     #ax.view_init(270, 0)
 
     ax.set_xlabel('Resource Constraint')
     ax.set_ylabel('Agent Trust')
     ax.tick_params(axis='both', which='major', labelsize=10)
+    if save:
+        title_save = 'figs/' + title +'.pdf'
+        plt.savefig(title_save, dpi = 300, bbox_inches = 'tight')
+        plt.close('all')
+    else:
+        plt.show()
+
+def stacked_lines(arr_big, dim1, dim2, title, type, save):
+
+    fig, ax = plt.subplots()
+
+    for i in range(5):
+
+        arr = arr_big[i]
+
+        avg_arr = np.mean(arr, axis = 2)
+        std_arr = np.std(arr, axis = 2)
+
+        avg_data = np.rot90(avg_arr)
+        std_data = np.rot90(std_arr)
+
+        n = len(dim1)
+        m = len(dim2)
+
+        tau = np.repeat(dim2, n)[::-1]
+
+        rho = (np.tile(dim1, m))[::-1]
+
+        avg_data = np.fliplr(avg_data)
+        std_data = np.fliplr(std_data)
+
+
+        df = pd.DataFrame({"rho":rho.reshape(n*m,), "tau":tau.reshape(n*m,), "avg":avg_data.reshape(n*m,), "std":std_data.reshape(n*m,)}, index=range(0,n*m))
+
+        #print(df)
+
+        rho_df = df.loc[df['rho'] == 1.0]
+
+        ax.plot(rho_df['tau'], rho_df['avg'])
+        ax.fill_between(rho_df['tau'], rho_df['avg'] - rho_df['std'], rho_df['avg'] + rho_df['std'], alpha=0.25)
+
+        #ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        #ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    #ax.spines['left'].set_visible(False)
+    #ax.spines['bottom'].set_visible(False)
+    #ax.spines['bottom'].set_position(('outward'))
+    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
+    ax.tick_params(which='both', width=2)
+    ax.tick_params(which='major', length=7)
+    ax.tick_params(which='minor', length=2, color='gray')
+    ax.set_xlabel("Average agent trust",  fontsize=13)
+
+    if type == 'triangles':
+        ax.plot(rho_df['tau'], [.0053, .0071, .0095, .029, .066, .094, .12][::-1], color = 'black', linestyle = 'dotted')
+        ax.set_ylabel("Fairness", fontsize=13)
+        custom_lines = [Line2D([0], [0], color='C0', lw=2),
+                        Line2D([0], [0], color='C1', lw=2),
+                        Line2D([0], [0], color='C2', lw=2),
+                        Line2D([0], [0], color='C3', lw=2),
+                        Line2D([0], [0], color='C4', lw=2),
+                        Line2D([0], [0], color='black', lw=2, ls = 'dotted')]
+
+
+        ax.legend(custom_lines, ['q = 1/5', 'q = 2/5', 'q = 3/5', 'q = 4/5', 'q = 5/5', 'without intervention'])
+
+    if type == 'new_trust':
+        ax.plot(rho_df['tau'], rho_df['tau'], color = 'black', linestyle = 'dotted')
+        ax.set_ylabel("New average agent trust", fontsize=13)
+
+    if type == 'spent':
+        ax.plot(rho_df['tau'], np.zeros((7)), color = 'black', linestyle = 'dotted')
+        ax.set_ylabel("Dollar amount spent",  fontsize=13)
+
+
+    #plt.show()
+        #print(rho_df)
+
+            #ax.plot(m.Time, m.Mean)
+            #ax.fill_between(m.Time, m.Mean - m.Std, m.Mean + m.Std, alpha=0.35)
+    #
     if save:
         title_save = 'figs/' + title +'.pdf'
         plt.savefig(title_save, dpi = 300, bbox_inches = 'tight')
