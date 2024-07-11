@@ -112,9 +112,6 @@ def entity_ad_campaign(G, ad_rho):
     money_spent = 0
 
     agents = [x for x in list(G.nodes())]
-    #old_agents = [y for y in list(G.nodes()) if G.nodes[y]['arrived'] == 0]
-
-    #new_agents.extend(old_agents)
 
     agents = sorted(agents, key=lambda m: G.nodes[m]['trust'])
 

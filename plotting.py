@@ -12,6 +12,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from matplotlib.ticker import (MultipleLocator, AutoMinorLocator, FixedLocator)
 from matplotlib.lines import Line2D
+import matplotlib
 
 def make_edge(x, y):
     return  go.Scatter(x         = x,
@@ -87,6 +88,8 @@ def vis_G(G):
     graph_vis(G, color)
 
 def heat_map(arr, dim1, dim2, type, title, save):
+    matplotlib.rcParams['pdf.fonttype'] = 42
+    matplotlib.rcParams['ps.fonttype'] = 42
 
     avg_arr = np.mean(arr, axis = 2)
 
@@ -103,7 +106,7 @@ def heat_map(arr, dim1, dim2, type, title, save):
 
     if type == 'triangles':
         ax = sns.heatmap(data, vmin = 0, vmax = .15,
-                 annot=True, cbar=True, square=True,
+                 annot=True, annot_kws={'size': 8.5}, cbar=True, square=True,
                  xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5)
 
     if type == 'num_prop':
@@ -113,6 +116,11 @@ def heat_map(arr, dim1, dim2, type, title, save):
 
     if type == 'spent':
         ax = sns.heatmap(data, vmin = 0, vmax = 150,
+                 annot=True, cbar=True, square=True,
+                 xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5, fmt='.2f')
+
+    if type == 'comp':
+        ax = sns.heatmap(data*100, vmin = -.3*100, vmax = 2*100,
                  annot=True, cbar=True, square=True,
                  xticklabels = x_tick_labels, yticklabels = y_tick_labels, linewidth=0.5, fmt='.2f')
 
@@ -130,6 +138,8 @@ def heat_map(arr, dim1, dim2, type, title, save):
         plt.show()
 
 def surface_plot(arr, dim1, dim2, type, title, save):
+    matplotlib.rcParams['pdf.fonttype'] = 42
+    matplotlib.rcParams['ps.fonttype'] = 42
 
     avg_arr = np.mean(arr, axis = 2)
 
@@ -147,10 +157,6 @@ def surface_plot(arr, dim1, dim2, type, title, save):
 
     df = pd.DataFrame({"rho":rho.reshape(n*m,), "tau":tau.reshape(n*m,), "tri":data.reshape(n*m,)}, index=range(0,n*m))
 
-    #print(df)
-
-    #print(df.head(27))
-
     X, y = df[["rho", "tau"]], df["tri"]
     poly = PolynomialFeatures(degree=2, include_bias=False)
     poly_features = poly.fit_transform(X)
@@ -163,9 +169,7 @@ def surface_plot(arr, dim1, dim2, type, title, save):
 
     print(i,c)
 
-
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-
 
     tau = np.arange(0, 1.00, 1/100)
     rho = np.arange(0, 2, 1/100)
@@ -173,16 +177,12 @@ def surface_plot(arr, dim1, dim2, type, title, save):
     R,T = np.meshgrid(rho, tau)
     tri = i + c[0]*R + c[1]*T + c[2]*(R**2) + c[3]*(T**2) + c[4]*T*R
 
-    # 0.012657288401117527 [-0.01259024 -0.06186663 -0.0001596   0.06530567  0.0585887 ]
-
-
     surf = ax.plot_surface(R, T, tri, cmap = sns.cm.rocket ,vmin =0, vmax = .2,
                            linewidth=0, antialiased=False)
 
     fig.colorbar(surf, shrink = .4)
 
     ax.view_init(10, 230)
-    #ax.view_init(270, 0)
 
     ax.set_xlabel('Resource Constraint')
     ax.set_ylabel('Agent Trust')
@@ -195,6 +195,8 @@ def surface_plot(arr, dim1, dim2, type, title, save):
         plt.show()
 
 def stacked_lines(arr_big, dim1, dim2, title, type, save):
+    matplotlib.rcParams['pdf.fonttype'] = 42
+    matplotlib.rcParams['ps.fonttype'] = 42
 
     fig, ax = plt.subplots()
 
@@ -228,13 +230,8 @@ def stacked_lines(arr_big, dim1, dim2, title, type, save):
         ax.plot(rho_df['tau'], rho_df['avg'])
         ax.fill_between(rho_df['tau'], rho_df['avg'] - rho_df['std'], rho_df['avg'] + rho_df['std'], alpha=0.25)
 
-        #ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-        #ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
-    #ax.spines['left'].set_visible(False)
-    #ax.spines['bottom'].set_visible(False)
-    #ax.spines['bottom'].set_position(('outward'))
     ax.xaxis.set_minor_locator(AutoMinorLocator(5))
     ax.tick_params(which='both', width=2)
     ax.tick_params(which='major', length=7)
@@ -261,14 +258,7 @@ def stacked_lines(arr_big, dim1, dim2, title, type, save):
     if type == 'spent':
         ax.plot(rho_df['tau'], np.zeros((7)), color = 'black', linestyle = 'dotted')
         ax.set_ylabel("Dollar amount spent",  fontsize=13)
-
-
-    #plt.show()
-        #print(rho_df)
-
-            #ax.plot(m.Time, m.Mean)
-            #ax.fill_between(m.Time, m.Mean - m.Std, m.Mean + m.Std, alpha=0.35)
-    #
+    
     if save:
         title_save = 'figs/' + title +'.pdf'
         plt.savefig(title_save, dpi = 300, bbox_inches = 'tight')

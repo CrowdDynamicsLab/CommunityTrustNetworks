@@ -15,7 +15,7 @@ def new(N, alpha, Tau_a, Tau_b):
         tau = np.random.beta(Tau_a, Tau_b)
         type = choices(['orange','blue'], [alpha, 1-alpha])
 
-        # add what iteration they arrived as well
+        # track iteration arrived, and new trust if changed
         G.add_node(node+1, trust = tau, type = type[0], arrived = 0, new_trust = 0)
 
     return G
@@ -57,16 +57,7 @@ def christakis(G, recs, it):
         if recs[node] is not None:
             got_rec = True
             rec_node = recs[node]
-            #if not transparent_entity:
             trust_rec = G.nodes[rec_node]['trust']
-            #else:
-                #trust_rec = G.nodes[rec_node]['new_trust']
-
-            # if entity can see agent trust, pay them payment_prop of difference between their trust and 1
-            #if transparent_agent_trust:
-            #    rec_payment = payment_prop*(1 - trust_rec)
-            #    trust_rec += rec_payment
-            #    money_spent_entity += rec_payment
 
             trust_flag_rec = choices([1,0], [trust_rec, 1-trust_rec])[0]
             if trust_flag:
@@ -81,12 +72,11 @@ def christakis(G, recs, it):
 
             # if the edge already exists, we might delete it
             # this only happens in the case we pick a random node
-
             if G.has_edge(node, node_pair):
                 if edge_util(G, node, node_pair) < 0 or edge_util(G, node_pair, node) < 0:
                     G.remove_edge(node, node_pair)
 
-            # if it didn't exist, we'll see if it should
+            # if it didn't exist, we'll see if it should be added
             else:
                 if edge_util(G, node, node_pair) > 0 and edge_util(G, node_pair, node) > 0:
                     G.add_edge(node, node_pair)
@@ -110,6 +100,7 @@ def get_pairing(G, node, it):
 def edge_util(G, u, v):
     ''' returns utility to u from forming an edge with v '''
 
+    # params for this context based on original work
     b1 = -1
     b2 = 0
     omega = .25

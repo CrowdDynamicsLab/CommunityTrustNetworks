@@ -11,22 +11,16 @@ import json
 N = 100                          # number of nodes init
 ntwk_iters = 15                  # network iters, how many nodes to add
 total_nodes = N+ntwk_iters
-extra_iters = 50                # extra iterations after all nodes have been added
+extra_iters = 50                 # extra iterations after all nodes have been added
 sim_iters = 10                   # total number of times to run each iter
-alpha = .5                      # node types
+alpha = .5                       # node type distribution
 
 rho_list = [0, 5, 10, 15, 20]
-#rho_list = [30, 40]
-#rho_list = [0]
-#rho_list = [20]
 Tau_list = [(2,20),(2,10),(2,5),(2,2),(5,2),(10,2),(20,2)]
-#Tau_list = [(20,2)]
-#Tau_list = [(5,2),(10,2),(20,2)]
 
 results_arr1 = np.empty((len(rho_list), len(Tau_list), sim_iters))
 results_arr2 = np.empty((len(rho_list), len(Tau_list), sim_iters))
 results_arr3 = np.empty((len(rho_list), len(Tau_list), sim_iters))
-#results_arr4 = np.empty((len(rho_list), len(Tau_list), sim_iters))
 
 G_old = None
 
@@ -51,7 +45,6 @@ for idx_r, rho in enumerate(rho_list):
                 if i != 0:
                     # public entity announces what it did in the last iteration
                     # this can change some agents' trust levels
-
                     recommendations.entity_announcement(G_old, G, transparent_entity = False, announcement_method = 'global')
 
                 # store the current G before anything happens
@@ -70,20 +63,11 @@ for idx_r, rho in enumerate(rho_list):
                 num_accepted_prop += num_accept
                 total_money_spent += amount_spent
 
-            tri = metrics.triangles(G)
-            print(tri)
-
             trust_list = [node[1]['trust'] for node in G.nodes.data()]
+
+            results_arr1[idx_r][idx_t][sim_it] = metrics.triangles(G)
             results_arr2[idx_r][idx_t][sim_it] = np.mean(trust_list)
-            results_arr1[idx_r][idx_t][sim_it] = tri
             results_arr3[idx_r][idx_t][sim_it] = total_money_spent
-            #results_arr3[idx_r][idx_t][sim_it] = num_recs_none
-            #results_arr4[idx_r][idx_t][sim_it] = tri
-            #print(num_accepted_prop)
-
-#print(results_arr)
-
-#new_rho_list = [x/G.number_of_nodes() for x in rho_list]
 
 class NumpyArrayEncoder(JSONEncoder):
     def default(self, obj):
@@ -93,16 +77,8 @@ class NumpyArrayEncoder(JSONEncoder):
 
 # Serialization
 filename = 'sim_output_new/rq2_5fifth_new10.json'
-#numpyData = {"triangles": results_arr1, "new_trust": results_arr2}
 numpyData = {"triangles": results_arr1, "new_trust": results_arr2, "amount_spent": results_arr3}
 #numpyData = {"triangles": results_arr1}
 with open(filename, "w") as write_file:
     json.dump(numpyData, write_file, cls=NumpyArrayEncoder)
 print("Done writing serialized NumPy array into file")
-
-#plotting.heat_map(results_arr1, new_rho_list, Tau_list, type = 'triangles', title = 'rho_vs_tau_triangles_spent50', save = True)
-#plotting.heat_map(results_arr2, new_rho_list, Tau_list, type = 'num_prop', title = 'rho_vs_tau_amount_spent50', save = True)
-#plotting.heat_map(results_arr3, new_rho_list, Tau_list, type = 'num_prop', title = 'rho_vs_tau_num_none_recs', save = True)
-#plotting.heat_map(results_arr4, new_rho_list, Tau_list, type = 'triangles', title = 'rho_vs_tau_triangles', save = True)
-
-#plotting.vis_G(G)
